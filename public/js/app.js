@@ -1,55 +1,46 @@
+var pioStorageURL = "http://104.155.80.221:3000";
 
-
-
-// Config
-var ipfsHost = 'ipfs.infura.io';
-var ipfsAPIPort = '5001';
-var ipfsWebPort = '8080';
-
-
-// IPFS
-var ipfs = window.IpfsApi(ipfsHost, ipfsAPIPort, {protocol: 'https'});
-ipfs.swarm.peers(function (err, response) {
-    if (err) {
-        console.error(err);
-    } else {
-        console.log("IPFS - connected to " + response.length + " peers");
-        console.log(response);
-    }
-});
-
-
-
-
-if (typeof web3 !== 'undefined') {
-    web3 = new Web3(web3.currentProvider);
-} else {
-    // set the provider you want from Web3.providers
-    document.getElementById("noMetamask").style.display = 'block';
-    //web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+var impactCategories = ["Climate Mitigation","Adaptation to Climate Change","Water & Soil","Energy & Ressources","Wastes","Economic","Corporate","Social & Communities","Society"];
+var sel = document.getElementById('claimType');
+for(var i = 0; i < impactCategories.length; i++) {
+    var opt = document.createElement('option');
+    opt.innerHTML = impactCategories[i];
+    opt.value = i;
+    sel.appendChild(opt);
 }
 
-var account = web3.eth.accounts[0];
+window.addEventListener('load', function () {
 
-var sendDataObject = {
-    from: account,
-    gas: 300000,
-};
+    // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+    if (typeof web3 !== 'undefined') {
+        // Use Mist/MetaMask's provider
+        web3 = new Web3(web3.currentProvider);
+
+    } else {
+        document.getElementById("noMetamask").style.display = 'block';
+        // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+        web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    }
+
+    // Now you can start your app & access web3 freely:
+    startApp();
+
+})
+
+
+function startApp() {
+    window.web3 = web3;
+    window.account = web3.eth.accounts[0];
+    window.fileStorageContract = web3.eth.contract(contractAbi).at(contractAddress);
+    window.currentFile = 0;
+    window.sendDataObject = {
+        from: account,
+        gas: 300000,
+    };
+}
 
 
 
-var fileStorageContract = web3.eth.contract(contractAbi).at(contractAddress);
-
-
-// Globals... who cares...      
-window.web3 = web3;
-window.account = account;
-window.fileStorageContract = fileStorageContract;
-window.currentData = "";
-window.currentFile = 0;
-window.ipfsDataHost = "https://" + ipfsHost + "/ipfs";
-
-var publishEvents = window.fileStorageContract.PublishEvent({_from: window.account}, {fromBlock: 0, toBlock: 'latest'});
 
 
 String.prototype.trunc =
@@ -70,129 +61,71 @@ function setStatus(message) {
 ;
 
 
-function getHashRecordCallback(err, result) {
-    if (err) {
-        setStatus('Error calling smart contract');
-    } else if (result) {
-        console.log(result);
-        setStatus("Publisher : "  + result[0]);
-        setStatus("Timestamp : "  + new Date(result[1] * 1000));
-        setStatus("Filename : "  + result[2]);
-        flink = result[3];
-        setStatus("File link : "  + "<a href=\"" + flink + "\"  download=\""+result[2]+"\">" + flink.trunc(70) + "</a>");
-        setStatus("Block : #"  + result[4]+ "<a href=\"http://testnet.etherscan.io/block/" + result[4] + "\"  target=\"_blank\"> See in Etherscan </a>");
-        
-    } else {
-        setStatus('No data found');
-    }
-    
-}
-
-function addHistoryLine(spanHistory, hashfile) {
-    
-
-    window.fileStorageContract.getHashRecord.call(hashfile, function (err, result) {
-        record = "";
-        record +="<p> <a href=\"http://testnet.etherscan.io/block/" + result[4] + "\"  target=\"_blank\"> Block #" + result[4] + "</a>" + "\t" + new Date(result[1] * 1000) + "</p>";
-        record +="<p> From : "  + result[0] +"</p>";
-        record +="<p> Filename : "+ result[2]+"</p>";
-        flink = result[3];
-        record +="<p>File link : "  + "<a href=\"" + flink + "\"  download=\""+result[2]+"\">" + flink.trunc(70) + "</a></p>";
-        record += "<br>";
-        
-        spanHistory.innerHTML = record + spanHistory.innerHTML;
-    }); 
-
-   
-}
-
-function watchHistoric () {
-        
-    histDiv = document.getElementById("history");
-    histDiv.innerHTML = "";
-    
-    var line = document.createElement("h4");
-    line.innerHTML = "My last transactions with account " + window.account;
-    histDiv.appendChild(line);
-
-    var spanHistory = document.createElement("span");
-    histDiv.appendChild(spanHistory);
-    
-    publishEvents.watch(function(err, result) {
-      if (err) {
-        console.log(err)
-        return;
-      }
-      //console.log(result.args.hash);
-      addHistoryLine(spanHistory, result.args.hash);
-    });
-}
-
-
-
-//function uploadFile() {
-//
-//    var form = new FormData();
-//    form.append("file", window.currentFile);
-//    var oReq = new XMLHttpRequest();
-//    oReq.onreadystatechange = function () {
-//        if (oReq.readyState == XMLHttpRequest.DONE) {
-//            alert(oReq.responseText);
-//        }
-//    }
-//    oReq.open("POST", "upload.php");
-//    oReq.send(form);
-//
-//}
-
 function transactionStatus(txid) {
 
     var startTime = Date.now();
+    var confirmationStartTime = -1;
     var counter = 0;
     var i = setInterval(function () {
-        web3.eth.getTransactionReceipt(txid, function (error, result) {
+        window.web3.eth.getTransaction(txid, function (error, result) {
 
-            if (result != null) {
-                clearInterval(i);
-                clearStatus();
-                setStatus("Transaction <a href=\"http://testnet.etherscan.io/tx/" + txid + "\"  target=\"_blank\">" + txid + "</a> validated");
-                var hashfile = web3.toAscii(document.getElementById("hashValue").value);
-                window.fileStorageContract.getHashRecord.call(hashfile, getHashRecordCallback);
-                watchHistoric();
-                
+            if (error !== null) {
+                console.log(error);
             } else {
-                elapsedTime = Date.now() - startTime;
-                clearStatus();
-                setStatus("Successfully sent data. Transaction pending since " + Math.trunc(elapsedTime / 1000) + " seconds");
+                if (result !== null && result.blockNumber === null) {
+                    //console.log(result);
+                    
+                    clearStatus();
+                    
+                    if(confirmationStartTime === -1)
+                        confirmationStartTime = Date.now();
+                    
+                    elapsedTime = Date.now() - confirmationStartTime;
+                    setStatus("Transaction <a href=\"http://testnet.etherscan.io/tx/" + txid + "\"  target=\"_blank\">" + txid + "</a> validated");
+                    setStatus("Waiting transaction confirmation since " + Math.trunc(elapsedTime / 1000) + " seconds");
+
+
+                } else if(result !== null) {
+                    clearStatus();
+                    clearInterval(i);
+                    setStatus("Transaction <a href=\"http://testnet.etherscan.io/tx/" + txid + "\"  target=\"_blank\">" + txid + "</a> confirmed");
+                    var hashfile = window.web3.toAscii(document.getElementById("hashValue").value);
+                    window.fileStorageContract.getHashRecord.call(hashfile, getHashRecordCallback);
+                } else {
+                    
+                    elapsedTime = Date.now() - startTime;
+                    clearStatus();
+                    setStatus("Successfully sent data. Transaction pending since " + Math.trunc(elapsedTime / 1000) + " seconds");
+                }
             }
         });
 
 
         counter++;
 
-    }, 1000);
+    }, 2000);
 
 }
 
 
 function documentRegisterCallback(err, result) {
 
-    if (result == true) {
+    if (result === true) {
         setStatus("This file has already been certified");
     } else {
 
-        var elem = document.getElementById("hashValue");
-        var hashFile = web3.toAscii(elem.value);
-        var fname = document.getElementById("filename").value;
-        var furl = document.getElementById("fileurl").value;
-        window.fileStorageContract.publish.sendTransaction(hashFile, fname, furl, window.sendDataObject, function (err, result) {
+        var hashFile = window.web3.toAscii($('#hashValue').val());
+        var cname = $('#claimName').val();
+        var ctype = "" + $('#claimType').val();
+
+        window.fileStorageContract.publish.sendTransaction(hashFile, cname, ctype, window.sendDataObject, function (err, res) {
             if (err) {
                 setStatus("Error sending data: " + err);
             } else {
-                window.currentData = data;
-                setStatus("Successfully sent data. Transaction pending ...");              
-                transactionStatus(result);
-                
+
+                setStatus("Successfully sent data. Transaction pending ...");
+                transactionStatus(res);
+
             }
         });
     }
@@ -200,32 +133,27 @@ function documentRegisterCallback(err, result) {
 
 function certifyDocument() {
 
-    clearStatus();
-    if (!window.fileStorageContract) {
-        setStatus("Can't access to the smart contract, please install MetaMask");
-        return;
+
+}
+
+function getHashRecordCallback(err, result) {
+    if (err) {
+        setStatus('Error calling smart contract');
+    } else if (result) {
+        console.log(result);
+        setStatus("Publisher : " + result[0]);
+        setStatus("Timestamp : " + new Date(result[1] * 1000));
+        setStatus("Project name : " + result[2]);
+        
+        setStatus("Impacts categories : " + impactCategories[result[3]]);
+        setStatus("File : <a href=\"" + pioStorageURL+"/"+$('#hashValue').val() + "\"  download=\"" + result[2] + "\"> Download </a>");
+        
+        
+        setStatus("Block : #" + result[4] + "<a href=\"http://testnet.etherscan.io/block/" + result[4] + "\"  target=\"_blank\"> See in Etherscan </a>");
+
+    } else {
+        setStatus('No data found');
     }
-
-    var elem = document.getElementById("hashValue");
-    var hashFile = elem.value;
-    elem = document.getElementById("fileurl");
-    var fileurl = elem.value;
-
-    data = hashFile + fileurl;
-
-    if (window.currentData == data) {
-        setStatus("You will override your contract's data with the same data, no need ");
-        return;
-    }
-    
-    if(fileurl === "") {
-        var r = confirm("Are you sure you want to register this document with no file link ?");
-        if (!r) {
-            return;
-        }
-    }
-    window.fileStorageContract.documentExists.call(web3.toAscii(hashFile),documentRegisterCallback);	
-
 
 }
 
@@ -240,19 +168,6 @@ function documentVerifyCallback(err, result) {
     }
 }
 
-function verifyDocument() {
-    clearStatus();
-
-    if (!window.fileStorageContract) {
-        setStatus("Can't access to the smart contract, please install MetaMask");
-        return;
-    }
-
-    var hashfile = web3.toAscii(document.getElementById("hashValue").value);
-    window.fileStorageContract.documentExists.call(hashfile, documentVerifyCallback);
-
-
-}
 
 function arrayBufferToWordArray(ab) {
     var i8a = new Uint8Array(ab);
@@ -277,16 +192,17 @@ function computeHashFromFile(f) {
             hash = CryptoJS.enc.Hex.stringify(hash);
             //hash = CryptoJS.enc.Base64.stringify(hash).substring(0,31);
             //hash = hash.toString(CryptoJS.enc.Base64);
-            document.getElementById("computingHash").style.display = 'none';
-            document.getElementById("hashDiv").style.display = 'block';
-            document.getElementById("fileDataDiv").style.display = 'block';
-            document.getElementById("fileNameDiv").style.display = 'block';
-            document.getElementById("verify").disabled = false;
-            document.getElementById("certify").disabled = false;
-            var elem = document.getElementById("hashValue");
-            elem.value = hash;
-            document.getElementById("filename").value = theFile.name;
-            window.currentFile = theFile;
+            $('#computingHash').css({'display': 'none'}); //progress bar ?
+            $('#hashDiv').css({'display': 'block'});
+            $('#fileNameDiv').css({'display': 'block'});
+            $('#claimTypeDiv').css({'display': 'block'});
+
+            $('#verify').prop('disabled', false);
+            $('#register').prop('disabled', false);
+
+            $('#hashValue').val(hash);
+            $('#claimName').val(theFile.name);
+
 
         };
 
@@ -299,170 +215,142 @@ function computeHashFromFile(f) {
 
     // Read in the image file as a data URL.
     reader.readAsArrayBuffer(f);
-    window.currentFile = f;
-
-}
-
-function computeHashFromURL(urlDL, urlShare) {
-
-
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            var b = new Blob([xhr.response]);
-            var filename = urlDL.substring(urlDL.lastIndexOf("/") + 1).split("?")[0];
-            b.name = filename;                        
-            computeHashFromFile(b);
-            document.getElementById("fileurl").value = urlShare;
-        }
-    }
-    xhr.open("GET", urlDL, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.send();
-
 }
 
 
-function onSelectChange() {
-    resetForm();
-    
-    var selectedValue = document.getElementById("fileType").value;
-    var upload = selectedValue == "1";
-    if (upload) {
-        document.getElementById("uploadDiv").style.display = 'block';
-        document.getElementById("urlDiv").style.display = 'none';
-    } else {
-        document.getElementById("uploadDiv").style.display = 'none';
-        document.getElementById("urlDiv").style.display = 'block';
 
+function newForm() {
+    $('#upload-input').prop('disabled', false);
+    $('#upload-input').val("");
+    $('#hashValue').val("");
+    $('#claimName').val("");
+    $('#claimType').val(0);
 
-    }
-}
+    $('#computingHash').css({'display': 'none'});
+    $('#hashDiv').css({'display': 'none'});
+    $('#fileNameDiv').css({'display': 'none'});
+    $('#claimTypeDiv').css({'display': 'none'});
 
-function onFileSelected() {
-        
-    file = document.getElementById("upload").files[0];
-    if (file) {
-        document.getElementById("computingHash").style.display = 'block';
-        computeHashFromFile(file);
+    $('#verify').prop('disabled', true);
+    $('#register').prop('disabled', true);
+    $('#invite').prop('disabled', true);
 
-    }
-}
-
-function onURLchanged() {
-    
-    
-    urlShare = document.getElementById("givenurl").value;
-    urlDL = urlShare.replace("www.dropbox.com", "dl.dropboxusercontent.com");
-    if (urlShare) {
-        document.getElementById("computingHash").style.display = 'block';
-        computeHashFromURL(urlDL, urlShare);
-
-    }
-}
-
-function resetForm() {
-
-    document.getElementById("upload").value = "";
-    document.getElementById("givenurl").value = "";
-
-    document.getElementById("hashValue").value = "";
-    document.getElementById("fileurl").value = "";
-
-    document.getElementById("hashDiv").style.display = 'none';
-    document.getElementById("fileDataDiv").style.display = 'none';
-    document.getElementById("fileNameDiv").style.display = 'none';
-    
-    document.getElementById("verify").disabled = true;
-    document.getElementById("certify").disabled = true;
-    
     clearStatus();
-
 }
 
-
-
-
-
-function addFileURL(url) {
-
-    window.ipfs.util.addFromURL(url, function (err, result) {
-        if (err) {
-            console.error('Error sending file: ', err);
-            return null;
-        } else {
-            console.log(result);
-            var IPFSurl = ipfsDataHost + "/" + result[0].hash;
-            console.log(IPFSurl);
-        }
-    });
+function sendMail() {
 }
 
-function uploadToIPFS() {
+function uploadFile (hashFile) {
+  var files = $('#upload-input').get(0).files;
 
-    document.getElementById("fileurl").value = "Wait while uploading "+ window.currentFile.name ;
-    reader = new FileReader()
-    reader.onload = function () {
-        var toStore =  ipfs.Buffer(reader.result);
-        ipfs.add(toStore, function (err, res) {
-            if (err || !res) {
-                return console.error('ipfs add error', err, res)
+  if (files.length > 0){
+    // create a FormData object which will be sent as the data payload in the
+    // AJAX request
+    var formData = new FormData();
+
+    // loop through all the selected files and add them to the formData object
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+
+      // add the files to formData object for the data payload
+      formData.append('uploads[]', file, hashFile);
+    }
+
+    $.ajax({
+      url: pioStorageURL + '/upload',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(data){
+          console.log('upload successful!\n' + data);
+      },
+      xhr: function() {
+        // create an XMLHttpRequest
+        var xhr = new XMLHttpRequest();
+
+        // listen to the 'progress' event
+        xhr.upload.addEventListener('progress', function(evt) {
+
+          if (evt.lengthComputable) {
+            // calculate the percentage of upload completed
+            var percentComplete = evt.loaded / evt.total;
+            percentComplete = parseInt(percentComplete * 100);
+
+            // update the Bootstrap progress bar with the new percentage
+            $('.progress-bar').text(percentComplete + '%');
+            $('.progress-bar').width(percentComplete + '%');
+
+            // once the upload reaches 100%, set the progress bar text to done
+            if (percentComplete === 100) {
+              $('.progress-bar').html('Done');
             }
 
-            var IPFSurl = ipfsDataHost + "/" + res[0].hash;
-            document.getElementById("fileurl").value = IPFSurl;            
-        })
-    }
-    reader.readAsArrayBuffer(window.currentFile)
+          }
 
+        }, false);
+
+        return xhr;
+      }
+    });
+
+  }
 }
 
-function downloadFromIPFS(hash) {
-    ipfs.cat(hash, function (err, res) {
-    if (err || !res) {
-      return console.error('ipfs cat error', err, res)
-    }
-    if (res.readable) {
-      console.error('unhandled: cat result is a pipe', res)
+$('#upload-input').on('change', function () {
+    $('#upload-input').prop('disabled', true);
+    var files = $(this).get(0).files;
+    if (files.length > 0) {
+        $('#computingHash').css({'display': 'block'});
+        computeHashFromFile(files[0]);
+
     } else {
-     
-      document.getElementById('fileurl').innerText = res
+        newForm();
     }
-  })
-}
+});
 
 
-function sendMail () {
+
+$('#verify').click(function () {
+    clearStatus();
+
+    if (!window.fileStorageContract) {
+        setStatus("Can't access to the smart contract, please install MetaMask");
+        return;
     }
 
-
-var options_load = {
-    // Required. Called when a user selects an item in the Chooser.
-    success: function (files) {
-        document.getElementById("givenurl").value = files[0].link;
-        onURLchanged();
-    },
-    // Optional. Called when the user closes the dialog without selecting a file
-    // and does not include any parameters.
-    cancel: function () {
-
-    },
-    // Optional. "preview" (default) is a preview link to the document for sharing,
-    // "direct" is an expiring link to download the contents of the file. For more
-    // information about link types, see Link types below.
-    linkType: "preview", // or "direct"
-
-    // Optional. A value of false (default) limits selection to a single file, while
-    // true enables multiple file selection.
-    multiselect: false, // or true
+    var hashfile = window.web3.toAscii($('#hashValue').val());
+    window.fileStorageContract.documentExists.call(hashfile, documentVerifyCallback);
 
 
-};
+});
 
-var button = Dropbox.createChooseButton(options_load);
-document.getElementById("cloud_file2").appendChild(button);
+$('#register').click(function () {
+    clearStatus();
+    if (!window.fileStorageContract) {
+        setStatus("Can't access to the smart contract, please install MetaMask");
+        return;
+    }
 
-watchHistoric ();
+    var hashFile = $('#hashValue').val();
+    
+    uploadFile(hashFile);
+
+//    var r = confirm("Are you sure you want to register this document with no file link ?");
+//    if (!r) {
+//            return;
+//    }
+
+    window.fileStorageContract.documentExists.call(web3.toAscii(hashFile), documentRegisterCallback);
+
+
+});
+
+
+$('#newClaimButton').click(function () {
+    newForm();
+});
 
 
 

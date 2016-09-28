@@ -7,6 +7,7 @@ var fs = require('fs');
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
+    //res.setHeader('Access-Control-Allow-Origin', 'playitopen.org');
     res.setHeader('Access-Control-Allow-Origin', '*');
 
     // Request methods you wish to allow
@@ -23,10 +24,10 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', function(req, res){
-  res.sendFile(path.join(__dirname, 'views/index.html'));
+app.get('/:hashfile', function(req, res){
+  res.sendFile(path.join(__dirname, 'uploads/'+req.params.hashfile));
 });
 
 app.post('/upload', function(req, res){
@@ -61,6 +62,7 @@ app.post('/upload', function(req, res){
   form.parse(req);
 
 });
+
 
 var server = app.listen(3000, function(){
   console.log('Server listening on port 3000');

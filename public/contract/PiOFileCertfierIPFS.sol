@@ -1,37 +1,42 @@
-contract PiOFileCertifier {
+contract PiOClaimRegisterSigner {
 	
-	struct HashRecord {
+	struct Claim {
 		address publisher;
 		uint timestamp;
-                string filename;
-		bytes32 ipfsHash;                
-		uint blockNumber;
+                string projectName;
+		uint claimType;	
+                address[] partnersInvited;
+                mapping(address => bool) partnersSignature;	
 	}
-    
 
-	mapping(bytes32 => HashRecord) private hash_records;
+            
+
+        mapping(address => string) private validPartners;
+
+	mapping(bytes32 => Claim) private hashClaim;
 	event PublishEvent (address indexed _from, bytes32 hash);
 
 		
 	address pio_owner;
     
-	function PiOFileCertifier(){
+	function PiOClaimRegisterSigner(){
 		pio_owner = msg.sender; 
 	}
 
-	function publish(bytes32 hash, string filename, bytes32 ipfsHash) returns (bool success) {
+	function register(bytes32 hash, string projectName, uint claimType, address[] partners) returns (bool success) {
 	
-		if (documentExists(hash)) {
+		if (claimExists(hash)) {
 			return false;
 	    }else{
 
         		
-			hash_records[hash].publisher = msg.sender;
-                        hash_records[hash].filename = filename;
-			hash_records[hash].ipfsHash = ipfsHash;
-			hash_records[hash].blockNumber = block.number;
-	        	hash_records[hash].timestamp = now;
-
+			hashClaim[hash].publisher = msg.sender;
+                        hashClaim[hash].timestamp = now;
+                        hashClaim[hash].projectName = projectName;
+			hashClaim[hash].claimType = claimType;			
+	        	for(uint i=0;i<partners.length;i++){
+                            hashClaim[hash].partnersInvited.push(partners[i]);
+                        }
 			PublishEvent(msg.sender,hash);
 	
 			return true;
@@ -40,30 +45,42 @@ contract PiOFileCertifier {
 
     	}
 
+        function signClaim (bytes32 hash) {
+                if (claimExists(hash)) {
+                    if (validPartners[msg.sender] != 0) {
+                        hashClaim[hash].partnersSignature[msg.sender] = true;
+                    }
+                }
+        }
+
+
+        function addPartners (address partner, string partnerName) {
+            if (msg.sender != pio_owner) return;
+            partners[partner] = partnerName;
+        }
 		
 
-	function getHashRecord(bytes32 hash) constant returns (address publisher, uint timestamp, bytes32 ipfsHash, string fileurl, uint blockNumber) {
-		HashRecord record = hash_records[hash];        
+	function getClaim(bytes32 hash) constant returns (address publisher, uint timestamp, string projectName, uint claimType) {
+		Claim record = [hash];        
 		publisher = record.publisher;
 		timestamp = record.timestamp;
-                filename = record.filename;
-		ipfsHash = record.ipfsHash;
-		blockNumber = record.blockNumber;
+                projectName = record.projectName;		
+		claimType = record.claimType;
 	}
 
     
 
-	function documentExists(bytes32 hash) constant returns (bool exists){
-        	if (hash_records[hash].timestamp != 0) {
+	function claimExists(bytes32 hash) constant returns (bool exists){
+        	if (hashClaim[hash].timestamp != 0) {
         		return true;
         	}
 		return false;
 	}
 	
+
 	function kill() {
             if (msg.sender != pio_owner) return;
-            suicide(pio_owner);   
+            selfdestruct(pio_owner);   
         }
-
 }
 

@@ -1,17 +1,19 @@
 <!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
 <html>
     <head>
-        <meta charset="UTF-8"> 
-        <title>IPI - File certifier</title>
-
+        <title>IPI Blockchain register</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="./css/style.css" rel='stylesheet' type='text/css'>
-
-
     </head>
-
-
+           
     <body>
-        <div id="contact-form">
+        <div id="main_div">
             <div id="logo">
                 <img src="img/logoipi.jpg" alt="IPI" height="156" width="181">
             </div>
@@ -23,105 +25,9 @@
 
             </div>	
             <div style="margin:10% 5%;">
-
-                <h4>Step 1. If you want to blockchain register a claim, first verify that your claim has not been registered yet.</h4>
-                <h4>Step 2. Register the document supporting your claim.</h4>
-                <h4>Step 3. Invite your stakeholders to sign and validate your claim.</h4> 
                 
-                <p id="noMetamask">You need to install MetaMask to use this app. Please visit <a href="https://metamask.io/" target="_blank">https://metamask.io/</a></p>  
-
-                <p id="status"></p>
-                
-
-                <form method="post" enctype="multipart/form-data">
-                    <div id="forminputdiv">
-                    <div>		          
-                        <label for="fileType">
-                            <span class="required">Choose a file : </span>
-                            <select id="fileType" tabindex="4"  onchange="onSelectChange()">  
-                                <option value="1">From local disk</option> 
-                                <option value="2">From URL </option>                                			        
-                            </select>
-                        </label>
-                    </div>
-
-                    <div id="uploadDiv">		          
-                        <label for="upload">		      	
-                            <input type="file" id="upload" onchange="onFileSelected()" required="required">
-                        </label> 
-                    </div> 
-
-                    <div style="display:none;" id="urlDiv">
-                        <div id="cloud_file2"></div>
-                        <label for="givenurl">
-
-                            <input type="url" id="givenurl" oninput="onURLchanged()" placeholder="Enter URL file" required="required">
-
-                        </label>
-                    </div>
-
-                    <div style="display:none;margin: 5% 5%;text-align: center;" id="computingHash">
-                        <label for="computingHash">
-                            <span class="required">Please wait while computing hash ... </span> 
-                            <br>
-                        </label>
-                    </div>
-
-                    <div style="display:none;" id="hashDiv">
-                        <label for="hashValue">
-                            <span class="required">Hash : </span> 
-                            <input type="text" id="hashValue" placeholder="Hash ..." required="required">
-                        </label>
-                    </div>
-                    <div style="display:none;" id="fileNameDiv">
-                        <label for="filename">
-                            <span class="required">Filename : </span> 			
-                            <input type="text" id="filename" placeholder="Filename ..." required="required">
-                        </label>
-                    </div>
-                    <div style="display:none;" id="fileDataDiv">
-                        
-                        <label for="fileurl">
-                            <span class="required">File link : </span><button type="button" id="ipfsupload" class="ipfsupload" onclick="uploadToIPFS()">Upload to IPFS</button>
-                            <input type="text" id="fileurl" class="fileurl" placeholder="URL ..." required="required">
-                            
-                        </label>
-                    </div>
-                    </div>
-                    <div>		           
-                        <button type="button" id="verify" onclick="verifyDocument()" disabled>VERIFY</button>  
-                        <button type="button" id="certify" onclick="certifyDocument()" disabled>CERTIFY</button>
-                        <button type="button" id="reset" onclick="resetForm()">RESET</button>
-                    </div>
-                </form>
+                <h4>Claim list.</h4>
             </div>
-            <br>
-
-            <div id="history">
-
-            </div>	
-
-
-
-
         </div>
-
-        <footer class="footer">
-            <div class="container">
-                <p class="text-muted">Copyright © Play It Open Team</p>
-            </div>
-        </footer>
-
-        <script src="js/web3.min.js"></script>
-        <script src="js/core-min.js"></script>  
-        <script src="js/sha256-min.js"></script>            
-        <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="n6gz4m0875atkac"></script>
-        <script src="https://npmcdn.com/ipfs-api/dist/index.min.js"></script>
-        <script src="js/abi.js"></script>
-        <script src="js/app.js"></script>
-
     </body>
-
-
-
 </html>
