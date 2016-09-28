@@ -90,7 +90,7 @@ function transactionStatus(txid) {
                     clearInterval(i);
                     setStatus("Transaction <a href=\"http://testnet.etherscan.io/tx/" + txid + "\"  target=\"_blank\">" + txid + "</a> confirmed");
                     var hashfile = window.web3.toAscii(document.getElementById("hashValue").value);
-                    window.fileStorageContract.getHashRecord.call(hashfile, getHashRecordCallback);
+                    window.fileStorageContract.getClaim.call(hashfile, getHashRecordCallback);
                 } else {
                     
                     elapsedTime = Date.now() - startTime;
@@ -118,7 +118,7 @@ function documentRegisterCallback(err, result) {
         var cname = $('#claimName').val();
         var ctype = "" + $('#claimType').val();
 
-        window.fileStorageContract.publish.sendTransaction(hashFile, cname, ctype, window.sendDataObject, function (err, res) {
+        window.fileStorageContract.register.sendTransaction(hashFile, cname, ctype, [], window.sendDataObject, function (err, res) {
             if (err) {
                 setStatus("Error sending data: " + err);
             } else {
@@ -149,7 +149,7 @@ function getHashRecordCallback(err, result) {
         setStatus("File : <a href=\"" + pioStorageURL+"/"+$('#hashValue').val() + "\"  download=\"" + result[2] + "\"> Download </a>");
         
         
-        setStatus("Block : #" + result[4] + "<a href=\"http://testnet.etherscan.io/block/" + result[4] + "\"  target=\"_blank\"> See in Etherscan </a>");
+        //setStatus("Block : #" + result[4] + "<a href=\"http://testnet.etherscan.io/block/" + result[4] + "\"  target=\"_blank\"> See in Etherscan </a>");
 
     } else {
         setStatus('No data found');
@@ -164,7 +164,7 @@ function documentVerifyCallback(err, result) {
     } else {
         setStatus("This file has been certified : ");
         var hashfile = web3.toAscii(document.getElementById("hashValue").value);
-        window.fileStorageContract.getHashRecord.call(hashfile, getHashRecordCallback);
+        window.fileStorageContract.getClaim.call(hashfile, getHashRecordCallback);
     }
 }
 
@@ -321,7 +321,7 @@ $('#verify').click(function () {
     }
 
     var hashfile = window.web3.toAscii($('#hashValue').val());
-    window.fileStorageContract.documentExists.call(hashfile, documentVerifyCallback);
+    window.fileStorageContract.claimExists.call(hashfile, documentVerifyCallback);
 
 
 });
@@ -342,7 +342,7 @@ $('#register').click(function () {
 //            return;
 //    }
 
-    window.fileStorageContract.documentExists.call(web3.toAscii(hashFile), documentRegisterCallback);
+    window.fileStorageContract.claimExists.call(web3.toAscii(hashFile), documentRegisterCallback);
 
 
 });
