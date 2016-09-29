@@ -1,4 +1,10 @@
 var pioStorageURL = "http://104.155.80.221:3000";
+var impactCategories = ["Climate Mitigation","Adaptation to Climate Change","Water & Soil","Energy & Ressources","Wastes","Economic","Corporate","Social & Communities","Society"];
+
+function getDownloadURL(hash, filename) {
+    return pioStorageURL + "/download?h=" + hash + "&n=" + encodeURIComponent(filename);
+
+}
 
 window.addEventListener('load', function () {
 
@@ -36,15 +42,27 @@ function addTableLine(count, resultWatch) {
 
     result = window.fileStorageContract.getClaim.call(resultWatch.args._hash);//, function (err, result) {
     rowData = "<th>IPI</th>";
+    rowData += "<td>" + impactCategories[result[4]] + "</td>";
     rowData += "<td>" + result[2] + "</td>";
-    partner = window.fileStorageContract.getPartnerAdressData.call(result[0]);
-    rowData += "<td>" + partner[0] + "</td>";
-    rowData += "<td>" + result[4] + "</td>";
+    
+    author = window.fileStorageContract.getPartnerAdressData.call(result[0]);
+    rowData += "<td>" + author[0] + "</td>";
+    
+    partners = result[5];
+    partnerString = "";
+    for (i=0; i<partners.length; i++) {
+        partnerData = window.fileStorageContract.getPartnerAdressData.call(partners[i]);
+        partnerString += "<li>"+ partnerData[0];
+    }
+    rowData += "<td>" + partnerString + "</td>";
+    
     rowData += "<td>" + new Date(result[1] * 1000) + "</td>";
-    rowData += "<td><a href=\"" + pioStorageURL + "/" + resultWatch.args._hash + "\"  download=\"" + result[2] + "\"> Download </a></td>";
+    hashFile = resultWatch.args._hash;
+    hashFile = hashFile.substr(2);
+    rowData += "<td><a href=\"" + getDownloadURL(hashFile ,result[3]) + "\"> Download </a></td>";
     rowData += "<td><a href=\"http://testnet.etherscan.io/tx/" + resultWatch.transactionHash + "\"  target=\"_blank\"> Block </a></td>";
     // $('#row'+count).append(rowData);
     //newLine = "<tr id=\"row"+count+"\"></tr>";
-    $('#claimTable').append("<tr>" + rowData + "</tr>");
+    $('#claimTable').prepend("<tr>" + rowData + "</tr>");
     //});
 }

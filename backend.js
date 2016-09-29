@@ -26,8 +26,14 @@ app.use(function (req, res, next) {
 
 //app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/:hashfile', function(req, res){
-  res.sendFile(path.join(__dirname, 'uploads/'+req.params.hashfile));
+//app.get('/:hashfile', function(req, res){  
+//  res.sendFile(path.join(__dirname, 'uploads/'+req.params.hashfile));
+//});
+
+app.get('/download', function(req, res){      
+  var hash = req.param('h');
+  var filename = req.param('n');  
+  res.download(path.join(__dirname, 'uploads/'+hash), filename);  
 });
 
 app.post('/upload', function(req, res){

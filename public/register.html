@@ -2,10 +2,11 @@
 <html>
     <head>
         <meta charset="UTF-8"> 
-        <title>IPI Blockchain register</title>
-
-        <link href="./css/style.css" rel='stylesheet' type='text/css'>
+        <title>IPI Blockchain Register</title>
         
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+        <link href="./css/jquery.multiselect.css" rel="stylesheet" type="text/css">
+        <link href="./css/style.css" rel='stylesheet' type='text/css'>    
     </head>
 
 
@@ -16,7 +17,7 @@
             </div>
             <div style="width:100%;">
                 <div>
-                    <h1>WELCOME TO THE IPI BLOCKCHAIN CLAIM REGISTRER</h1> 
+                    <h1>Welcome to the IPI Blockchain Register</h1> 
                     <br><br>                  
                 </div>	
 
@@ -38,8 +39,9 @@
                     <div id="forminputdiv">
 
                         <div id="uploadDiv">
-                            <span class="required">Choose a claim : </span>
-                            <label for="upload-input">		      	
+                            
+                            <label for="upload-input">	
+                                <span class="required">Choose a claim : </span>
                                 <input type="file" id="upload-input" required="required">
                             </label> 
                         </div> 
@@ -59,7 +61,7 @@
                         </div>
                         <div style="display:none;" id="fileNameDiv">
                             <label for="claimName">
-                                <span class="required">Project name : </span> 			
+                                <span class="required">Project name and short description : </span> 			
                                 <input type="text" id="claimName" placeholder="Project name ..." required="required">
                             </label>
                         </div>
@@ -69,6 +71,16 @@
                                 <span class="required">Impacts categories : </span>
                                 <select id="claimType" required="required">                             
                                 </select>
+                                
+                            </label>
+                        </div>
+                        <div style="display:none;" id="partnerDiv">
+                           
+                            <label for="partnerSelect">
+                                 <span class="required">Choose partners for signature : </span>
+                                <select id="partnerSelect" multiple required="required">                             
+                                </select>
+                                <span id = "partnerList" class="required"> </span>
                                 
                             </label>
                         </div>
@@ -89,15 +101,16 @@
         </div>
 
         <footer class="footer">
-            <div class="container">
+            <div>
                 <p class="text-muted">Copyright © Play It Open Team</p>
             </div>
         </footer>
 
+        <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
         <script src="js/web3.min.js"></script>
         <script src="js/core-min.js"></script>  
-        <script src="js/sha256-min.js"></script>        
-        <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+        <script src="js/sha256-min.js"></script>                
+        <script src="js/jquery.multiselect.js"></script>
         <script src="js/abi.js"></script>
         <script src="js/register.js"></script>
 

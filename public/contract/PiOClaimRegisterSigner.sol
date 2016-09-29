@@ -6,6 +6,7 @@ contract PiOClaimRegisterSigner {
 		address publisher;
 		uint timestamp;
         string projectName;
+        string fileName;
 		uint claimType;	
         address[] involvedPartners;
         mapping(address => bool) signed;	
@@ -24,9 +25,9 @@ contract PiOClaimRegisterSigner {
 
 	mapping(bytes32 => Claim) private hashClaim;
 	
-	event RegisterEvent (address indexed _partner, bytes32 _hash);
-	event SignEvent (address indexed _partner, bytes32 _hash);
-	event PartnershipChanged(address _partner, bool _isSigner);
+	event RegisterEvent (address indexed _partner, bytes32 indexed _hash);
+	event SignEvent (address indexed _partner, bytes32 indexed _hash);
+	event PartnershipChanged(address indexed _partner, bool _isSigner);
 
     address pio_owner;
     
@@ -55,7 +56,7 @@ contract PiOClaimRegisterSigner {
         partnersId[pio_owner] = 0;
 	}
 
-	function register(bytes32 hash, string projectName, uint claimType, address[] involvedPartners) onlyPartners returns (bool success)  {
+	function register(bytes32 hash, string projectName, string fileName, uint claimType, address[] involvedPartners) onlyPartners returns (bool success)  {
 	
 		if (claimExists(hash)) {
 			return false;
@@ -65,6 +66,7 @@ contract PiOClaimRegisterSigner {
 			hashClaim[hash].publisher = msg.sender;
             hashClaim[hash].timestamp = now;
             hashClaim[hash].projectName = projectName;
+            hashClaim[hash].fileName = fileName;
 			hashClaim[hash].claimType = claimType;			
 	        for(uint i=0;i<involvedPartners.length;i++){
                     hashClaim[hash].involvedPartners.push(involvedPartners[i]);
@@ -124,12 +126,13 @@ contract PiOClaimRegisterSigner {
     }
 		
 
-	function getClaim(bytes32 hash) constant returns (address publisher, uint timestamp, string projectName, uint claimType, address[] involvedPartners) {
+	function getClaim(bytes32 hash) constant returns (address publisher, uint timestamp, string projectName, string fileName, uint claimType, address[] involvedPartners) {
 		if (claimExists(hash)) {
 		    Claim _claim = hashClaim[hash];        
 		    publisher = _claim.publisher;
 		    timestamp = _claim.timestamp;
             projectName = _claim.projectName;		
+            fileName = _claim.fileName;
 		    claimType = _claim.claimType;
 		    involvedPartners = _claim.involvedPartners;
 		} 

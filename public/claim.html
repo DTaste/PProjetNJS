@@ -20,31 +20,25 @@ and open the template in the editor.
             </div>
             <div style="width:100%;">
                 <div>
-                    <h1>Welcome to the IPI Blockchain Register</h1> 
+                    <h1><h1>Welcome to the IPI Blockchain Register</h1>
                     <br><br>                  
                 </div>	
 
             </div>	
             <div style="margin:10% 5%;">
                 
-                <h4>This page contains all the digitally signed IPI claims in the blockchain.</h4>
-                <table id="claimTable">
-                    <thead>
-                    <tr>
-                        <th><label for=e1>Host</label>
-                        <th><label for=e2>Impact</label>
-                        <th><label for=e3>Project name</label>
-                        <th><label for=e4>Emitter</label>
-                        <th><label for=e5>Co-signers</label>
-                        <th><label for=e6>Date</label>                        
-                        <th><label for=e7>File</label>
-                        <th><label for=e8>Blockchain</label>                            
-                            
-                   <tr>
-                   </thead>
-                   <tbody></tbody>
-                    
-                </table>
+                <h4>Blockchain claim found</h4>
+                
+                <h4>This page contains information about digitally signed claim embedded in the blockchain.</h4>
+                
+                <p id="timestamp"></p>
+                <p id="transactionid"></p>
+                <p id="senderAdress"></p>
+                
+                <p id="projectDescription"></p>
+                <p id="projectCategory"></p>
+                <p id="fileDownload"></p>
+                
             </div>
         </div>
         
@@ -57,6 +51,6 @@ and open the template in the editor.
         <script src="js/web3.min.js"></script>             
         <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
         <script src="js/abi.js"></script>
-        <script src="js/table.js"></script>
+        <script src="js/claim.js"></script>
     </body>
 </html>

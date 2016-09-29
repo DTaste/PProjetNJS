@@ -19,6 +19,7 @@ html{
    text-rendering:optimizeLegibility;
 }
 body {
+   background-color: rgba(180,180,180,1);
    color: #1e497e;
    font-family: 'Kalinga', Arial, san-serif;
 }
@@ -34,6 +35,10 @@ h4{
    margin: 0 0 20px 0;
 }
 
+label{
+   display: inline;
+}
+
 table {
    width:100%;
    background: #FFFFFF;
@@ -44,6 +49,8 @@ table {
    border-radius: 4px;
    margin-bottom: 25px;  
    padding: 5px;  
+   border-collapse:separate;
+   border-spacing: 2px;
 }
 
 th {
@@ -84,7 +91,8 @@ overflow:hidden;
 #main_div input,   
 #main_div select,   
 #main_div textarea,   
-#main_div label { 
+#main_div label,
+#main_div p { 
    font-size: 15px;  
    margin-bottom: 2px;   
 } 
