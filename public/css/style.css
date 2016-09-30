@@ -58,6 +58,10 @@ th {
     color: #FFFFFF;
 }
 
+tr {
+    cursor:pointer;
+}
+
 #main_div {
    background-color:rgba(255,255,255,1);
     border:2px solid #1e497e;

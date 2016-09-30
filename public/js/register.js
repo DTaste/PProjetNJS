@@ -157,7 +157,12 @@ function documentRegisterCallback(err, result) {
         setStatus("This file has already been certified");
     } else {
 
-        var hashFile = window.web3.toAscii($('#hashValue').val());
+        //first upload !
+        
+        var hashFile = $('#hashValue').val();
+        uploadFile(hashFile);
+        
+        hashFile = window.web3.toAscii(hashFile);
         var cname = $('#claimName').val();
         var ctype = "" + $('#claimType').val();
         var partners = $("#partnerSelect").val();
@@ -379,16 +384,12 @@ $('#register').click(function () {
         return;
     }
 
-    var hashFile = $('#hashValue').val();
-
-    uploadFile(hashFile);
-
 //    var r = confirm("Are you sure you want to register this document with no file link ?");
 //    if (!r) {
 //            return;
 //    }
-
-    window.fileStorageContract.claimExists.call(web3.toAscii(hashFile), documentRegisterCallback);
+    var hashfile = window.web3.toAscii($('#hashValue').val());
+    window.fileStorageContract.claimExists.call(web3.toAscii(hashfile), documentRegisterCallback);
 
 
 });
